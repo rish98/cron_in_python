@@ -1,0 +1,82 @@
+[">" implies terminal of runner.py when printing out all the operations]
+on Thursday at 1200 run /bin/echo hello         (basic test case)
+>{'progPath': '/bin/echo', 'parameters': 'hello', 'timeSpec': {'when': ['1200'], 'day': ['Thursday']}, 'repeat': False, 'done': [1]}
+
+every Thursday at 1200 run /bin/echo hey          (on and every difference)
+>{'progPath': '/bin/echo', 'parameters': 'hey', 'timeSpec': {'when': ['1200'], 'day': ['Thursday']}, 'repeat': True, 'done': [1]}
+
+on Thursday,Friday,Monday at 1200 run /bin/echo hii      (multiple days)
+>{'progPath': '/bin/echo', 'parameters': 'hii', 'timeSpec': {'when': ['1200'], 'day': ['Monday', 'Thursday', 'Friday']}, 'repeat': False, 'done': [1, 1, 1]}
+
+every Thursday at 1200,1400,0500 run /bin/echo hellooo        (multiple times)
+>{'progPath': '/bin/echo', 'parameters': 'hellooo', 'timeSpec': {'when': ['0500', '1200', '1400'], 'day': ['Thursday']}, 'repeat': True, 'done': [1, 1, 1]}
+
+every Thursday,Friday,Monday at 1200,1400,0500 run /bin/echo sup       (multiple datetimes,Note len(done) array==9)
+>{'progPath': '/bin/echo', 'parameters': 'sup', 'timeSpec': {'when': ['0500', '1200', '1400'], 'day': ['Monday', 'Thursday', 'Friday']}, 'repeat': True, 'done': [1, 1, 1, 1, 1, 
+1, 1, 1, 1]}
+
+every Thursay,Friday,Monday at 1200,1400,0500 run /bin/echo hello (invalid day)
+>invalid day Thursay
+
+every Thursday,Friday,Monday at 1260,1400,0500 run /bin/echo hello (invalid time 1260)
+>invalid line  every Thursday,Friday,Monday at 1260,1400,0500 run /bin/echo hello
+
+every Thursday,Friday,Monday at 1200,1400,500 run /bin/echo hello (invalid time 500)
+>invalid line  every Thursday,Friday,Monday at 1260,1400,500 run /bin/echo hello
+
+every Thursday,Friday,Monday at 1200,1400,2500 run /bin/echo hello (invalid time 2500)
+>invalid line  every Thursday,Friday,Monday at 1260,1400,2500 run /bin/echo hello
+
+on every Thursday,Friday,Monday at 1260,1400,2500 run /bin/echo hello (two keywords)
+>invalid line  on every Thursday,Friday,Monday at 1260,1400,2500 run /bin/echo hello
+
+at on Thursday,Friday,Monday at 1260,1400,2500 run /bin/echo hello (at and on keywords)
+>invalid line  at on Thursday,Friday,Monday at 1260,1400,2500 run /bin/echo hello
+
+on Thursday,Friday,Monday at 1200,1400,2300  /bin/echo hello (missing run keyword)
+>bad configuration file line: on Thursday,Friday,Monday at 1200,1400,2300  /bin/echo hello
+
+on Monday,Friday,Monday at 1200,1400,2300  /bin/echo hello (repeated day)
+>day Monday repeated
+
+on Monday,Friday at 1200,1400,1200 run /bin/echo hello  (repeated time)
+>time 1200 repeated
+
+on Monday,Friday at 1200,1400 run /bin/echo hello    (2 operations with the same datetime )
+every Friday at 1400 run /bin/echo bye
+>{'progPath': '/bin/echo', 'parameters': 'hello', 'timeSpec': {'when': ['1200', '1400'], 'day': ['Monday', 'Friday']}, 'repeat': False, 'done': [1, 1, 1, 1]}
+>{'progPath': '/bin/echo', 'parameters': 'bye', 'timeSpec': {'when': ['1400'], 'day': ['Friday']}, 'repeat': True, 'done': [1]}
+>datetime: 2020-10-23 14:00:00 repeated
+
+on Monday,Friday at 1200,14-0 run /bin/echo hello       (weird time)
+>invalid line  on Monday,Friday at 1200,14-0 run /bin/echo hello
+
+on Monday,Friday at 1200,1430 run /bin/echo    (spaces for parameters)
+>{'progPath': '/bin/echo', 'parameters': '   ', 'timeSpec': {'when': ['1200', '1430'], 'day': ['Monday', 'Friday']}, 'repeat': False, 'done': [1, 1, 1, 1]}
+
+at 1100,1300 run /bin/echo greetings        (current time is 1200 on Thursday,an 'at' operation before and after slpits it up in two separate operations)
+>{'progPath': '/bin/echo', 'parameters': 'greetings', 'timeSpec': {'day': ['Friday'], 'when': ['1100']}, 'repeat': False, 'done': [1]}
+>{'progPath': '/bin/echo', 'parameters': 'greetings', 'timeSpec': {'day': ['Thursday'], 'when': ['1300']}, 'repeat': False, 'done': [1]}
+
+*********************************************************************************************************************************************************************
+#made currDT a global variable which i updated in the program for testing;currDT += datetime.timedelta(seconds=record);then slept for an arbitary time;time.sleep(2.5)
+['-' implies a record in status file]
+
+at 1300 run /bin/echo greeting          ()
+-ran Thu Oct 22 13:00:00 2020 /bin/echo greeting
+
+every Monday at 1000,1900 run /bin/echo greetings       (every shows operation that ran and next one)
+-ran Mon Oct 26 10:00:00 2020 /bin/echo greetings
+-will run Mon Oct 26 19:00:00 2020 /bin/echo greetings
+-ran Mon Oct 26 19:00:00 2020 /bin/echo greetings
+-ran Mon Oct 26 10:00:00 2020 /bin/echo greetings
+-will run Mon Oct 26 19:00:00 2020 /bin/echo greetings
+-ran Mon Nov  9 10:00:00 2020 /bin/echo greetings
+-will run Mon Nov  9 19:00:00 2020 /bin/echo greetings
+-ran Mon Nov  9 19:00:00 2020 /bin/echo greetings
+-ran Mon Nov  9 10:00:00 2020 /bin/echo greetings
+-will run Mon Nov  9 19:00:00 2020 /bin/echo greetings
+
+on Wednesday at 1000,1900 run /bin/ecgo hola        (wrong exec path "ecgo")
+-error Wed Oct 28 10:00:00 2020 /bin/ecgo hola
+
